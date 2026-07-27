@@ -1,0 +1,69 @@
+# Weekly Paycheck Phone App
+
+This package contains two versions:
+
+1. **Full installable PWA**  
+   Files: `index.html`, `styles.css`, `app.js`, `manifest.webmanifest`,
+   `service-worker.js`, and the `icons` folder.
+
+   Features:
+   - Phone-friendly calculator
+   - Works offline after the first visit
+   - Saves up to 52 weekly checks on the phone
+   - Install/Add to Home Screen support
+   - Editable pay and deduction settings
+
+2. **Standalone HTML calculator**  
+   File: `PaycheckCalculator_Standalone.html`
+
+   This can be opened directly in a browser, but browser security rules may
+   prevent full "install app" behavior when opened as a local file.
+
+## Defaults used
+
+- Regular rate: $36.10/hour
+- Overtime: 1.5x after 40 hours
+- Fixed pre-tax deduction: $176.80
+- Variable pre-tax deduction: 4% of gross pay
+- Post-tax deduction: $1.13
+- Taxes estimated from the four supplied payroll examples
+
+## Recommended phone installation
+
+The PWA must be served from HTTPS for full install/offline support.
+
+### GitHub Pages
+
+1. Create a new GitHub repository, for example `weekly-paycheck-app`.
+2. Upload the **contents** of the `Paycheck_Phone_App` folder.
+3. In the repository, open **Settings > Pages**.
+4. Under **Build and deployment**, select:
+   - Source: `Deploy from a branch`
+   - Branch: `main`
+   - Folder: `/ (root)`
+5. Open the GitHub Pages address on the phone.
+
+Android/Chrome:
+- Open the browser menu.
+- Select **Install app** or **Add to Home screen**.
+
+iPhone/Safari:
+- Tap the Share button.
+- Select **Add to Home Screen**.
+
+## Local computer test
+
+From the app folder run:
+
+```powershell
+py -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+Do not double-click `index.html` when testing the service worker. Service
+workers require HTTP/HTTPS.

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paycheck Quick Check</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#edf2f6;color:#17212b;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  header{padding:26px 18px;background:linear-gradient(135deg,#16324f,#244d72);color:white}
+  h1{margin:0 0 5px;font-size:2rem}header p{margin:0;opacity:.82}
+  main{max-width:620px;margin:auto;padding:15px}
+  .card{background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 14px 35px rgba(22,50,79,.10)}
+  label{display:block;font-weight:750;margin:0 0 7px}.input{display:flex;align-items:center;border:1px solid #dbe2e8;border-radius:14px;padding:0 13px;margin-bottom:14px;background:#f9fbfc}
+  input{width:100%;border:0;outline:0;background:transparent;padding:15px 0;font:inherit;font-size:1.08rem}
+  button{width:100%;border:0;border-radius:14px;padding:14px;background:#16324f;color:white;font:inherit;font-weight:800}
+  .net{font-size:3.2rem;font-weight:900;color:#17663a;letter-spacing:-.05em;margin:5px 0 12px}
+  .row{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #dbe2e8}.muted{color:#667482;font-size:.82rem}
+</style>
+</head>
+<body>
+<header><h1>Paycheck Check</h1><p>Quick weekly take-home estimate</p></header>
+<main>
+<section class="card">
+<label for="h">Hours worked</label><div class="input"><input id="h" type="number" inputmode="decimal" step=".01" placeholder="45.50"><span>hrs</span></div>
+<label for="e">Additional taxable pay</label><div class="input"><span>$</span><input id="e" type="number" inputmode="decimal" step=".01" value="0.00"></div>
+<button onclick="calc()">Calculate take-home</button>
+</section>
+<section class="card">
+<div class="muted">Estimated net pay</div><div id="n" class="net">$0.00</div>
+<div class="row"><span>Gross pay</span><strong id="g">$0.00</strong></div>
+<div class="row"><span>Pre-tax deductions</span><strong id="p">−$0.00</strong></div>
+<div class="row"><span>Employee taxes</span><strong id="t">−$0.00</strong></div>
+<div class="row"><span>Post-tax deductions</span><strong id="o">−$0.00</strong></div>
+<p class="muted" id="note">Uses your supplied payroll examples.</p>
+</section>
+</main>
+<script>
+const grossPts=[[0,0],[40,1444],[45.75,1755.37],[50.25,1999.05],[63.5,2716.53]];
+const pts=[[1607.34,307.87],[1755.37,357.48],[1999.05,439.18],[2716.53,681.48]];
+const usd=v=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(v);
+const r=v=>Math.round((v+Number.EPSILON)*100)/100;
+function interpFrom(x,points){let a,b;if(x<=points[0][0]){[a,b]=[points[0],points[1]]}else if(x>=points.at(-1)[0]){[a,b]=[points.at(-2),points.at(-1)]}else{for(let i=0;i<points.length-1;i++){if(points[i][0]<=x&&x<=points[i+1][0]){[a,b]=[points[i],points[i+1]];break}}}return a[1]+(x-a[0])*(b[1]-a[1])/(b[0]-a[0])}
+function interp(x){return interpFrom(x,pts)}
+function calc(){const h=Math.max(0,parseFloat(document.getElementById("h").value)||0),e=Math.max(0,parseFloat(document.getElementById("e").value)||0);const gross=r(interpFrom(h,grossPts)+e);const pre=gross?r(176.80+gross*.04):0;const floor=gross*.0765+Math.max(0,gross-pre)*.0495;const tax=gross?r(Math.max(0,interp(gross),floor)):0;const post=gross?1.13:0;const net=r(gross-pre-tax-post);document.getElementById("n").textContent=usd(net);document.getElementById("g").textContent=usd(gross);document.getElementById("p").textContent="−"+usd(pre);document.getElementById("t").textContent="−"+usd(tax);document.getElementById("o").textContent="−"+usd(post);document.getElementById("note").textContent=gross>=1607.34&&gross<=2716.53?"Inside your higher-confidence payroll range.":"Outside your supplied payroll range; use as an estimate."}
+</script>
+</body>
+</html>
