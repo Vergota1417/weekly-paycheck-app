@@ -1,69 +1,582 @@
-# Weekly Paycheck Phone App
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16324f">
+  <meta name="description" content="Weekly take-home paycheck estimator">
+  <title>Paycheck Check</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <style>
+    :root {
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #17212b;
+      background: #edf2f6;
+      --navy: #16324f;
+      --navy2: #244d72;
+      --muted: #667482;
+      --line: #dbe2e8;
+      --green: #17663a;
+      --red: #a22525;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top right, rgba(36,77,114,.18), transparent 34%),
+        #edf2f6;
+    }
+    header {
+      padding: max(25px, env(safe-area-inset-top)) 18px 25px;
+      background: linear-gradient(135deg, var(--navy), var(--navy2));
+      color: white;
+    }
+    .header-row {
+      max-width: 640px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    h1 { margin: 0 0 4px; font-size: 2.1rem; letter-spacing: -.045em; }
+    h2 { margin: 0; font-size: 1.18rem; }
+    p { margin-top: 0; }
+    header p { margin-bottom: 0; opacity: .82; }
+    main {
+      width: min(100%, 640px);
+      margin: auto;
+      padding: 15px 13px calc(34px + env(safe-area-inset-bottom));
+    }
+    .card {
+      margin-bottom: 14px;
+      padding: 18px;
+      border: 1px solid rgba(219,226,232,.9);
+      border-radius: 20px;
+      background: white;
+      box-shadow: 0 14px 35px rgba(22,50,79,.10);
+    }
+    label {
+      display: block;
+      margin: 0 0 7px;
+      font-size: .91rem;
+      font-weight: 780;
+    }
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 13px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f9fbfc;
+    }
+    .input-wrap:focus-within {
+      border-color: var(--navy2);
+      box-shadow: 0 0 0 3px rgba(36,77,114,.12);
+    }
+    input {
+      width: 100%;
+      min-width: 0;
+      padding: 15px 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font: inherit;
+      font-size: 1.08rem;
+      color: #17212b;
+    }
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: -2px 0 18px;
+    }
+    button {
+      min-height: 46px;
+      border-radius: 13px;
+      font: inherit;
+      font-weight: 820;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active { transform: translateY(1px); }
+    .preset {
+      min-height: 39px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--navy);
+    }
+    .primary {
+      width: 100%;
+      border: 0;
+      background: var(--navy);
+      color: white;
+    }
+    .secondary {
+      width: 100%;
+      border: 1px solid var(--navy);
+      background: white;
+      color: var(--navy);
+    }
+    .install {
+      width: auto;
+      min-height: 39px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,.68);
+      background: rgba(255,255,255,.12);
+      color: white;
+    }
+    .helper, .confidence, .empty, .legal {
+      color: var(--muted);
+      font-size: .8rem;
+      line-height: 1.4;
+    }
+    .helper { margin: -4px 0 14px; }
+    .net-label { margin-bottom: 3px; color: var(--muted); font-size: .87rem; font-weight: 720; }
+    .net {
+      margin-bottom: 7px;
+      color: var(--green);
+      font-size: clamp(2.8rem, 14vw, 4.5rem);
+      font-weight: 930;
+      line-height: 1;
+      letter-spacing: -.06em;
+    }
+    .breakdown { margin: 17px 0 15px; border-top: 1px solid var(--line); }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .row span { color: var(--muted); }
+    .row strong { white-space: nowrap; }
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 7px;
+    }
+    .text-button {
+      min-height: auto;
+      padding: 7px 3px;
+      border: 0;
+      background: transparent;
+      color: var(--navy2);
+    }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+    .history-item:first-child { border-top: 0; }
+    .history-info { display: grid; gap: 3px; }
+    .history-info span { color: var(--muted); font-size: .78rem; }
+    .empty { margin: 13px 0 5px; text-align: center; }
+    details summary { cursor: pointer; color: var(--navy); font-weight: 850; }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .settings-grid label { margin: 0; color: var(--muted); font-size: .78rem; }
+    .settings-grid input {
+      margin-top: 5px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .settings-buttons { display: grid; gap: 7px; }
+    .legal { padding: 0 8px; text-align: center; }
+    [hidden] { display: none !important; }
+    @media(max-width:390px) {
+      .settings-grid { grid-template-columns: 1fr; }
+      .card { padding: 16px; }
+    }
+    @media(display-mode: standalone) {
+      #installButton { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div>
+      <h1>Paycheck Check</h1>
+      <p>Hours in. Estimated take-home out.</p>
+    </div>
+    <button id="installButton" class="install" hidden>Install</button>
+  </div>
+</header>
 
-This package contains two versions:
+<main>
+  <section class="card">
+    <label for="hours">Hours worked</label>
+    <div class="input-wrap">
+      <input id="hours" type="number" min="0" step="0.01" inputmode="decimal"
+             placeholder="Example: 45.50">
+      <span>hrs</span>
+    </div>
 
-1. **Full installable PWA**  
-   Files: `index.html`, `styles.css`, `app.js`, `manifest.webmanifest`,
-   `service-worker.js`, and the `icons` folder.
+    <div class="presets">
+      <button class="preset" data-hours="40">40</button>
+      <button class="preset" data-hours="45">45</button>
+      <button class="preset" data-hours="50">50</button>
+      <button class="preset" data-hours="55">55</button>
+      <button class="preset" data-hours="60">60</button>
+    </div>
 
-   Features:
-   - Phone-friendly calculator
-   - Works offline after the first visit
-   - Saves up to 52 weekly checks on the phone
-   - Install/Add to Home Screen support
-   - Editable pay and deduction settings
+    <label for="extra">Additional taxable pay</label>
+    <div class="input-wrap">
+      <span>$</span>
+      <input id="extra" type="number" min="0" step="0.01" inputmode="decimal" value="0.00">
+    </div>
+    <p class="helper">Usually $0.00. Use this for a bonus, holiday pay, PTO, premium, or payroll correction.</p>
+    <button id="calculate" class="primary">Calculate take-home</button>
+  </section>
 
-2. **Standalone HTML calculator**  
-   File: `PaycheckCalculator_Standalone.html`
+  <section class="card">
+    <div class="net-label">Estimated net pay</div>
+    <div id="net" class="net">$0.00</div>
+    <p id="confidence" class="confidence">Enter this week’s hours.</p>
 
-   This can be opened directly in a browser, but browser security rules may
-   prevent full "install app" behavior when opened as a local file.
+    <div class="breakdown">
+      <div class="row"><span>Regular hours</span><strong id="regularHours">0.00</strong></div>
+      <div class="row"><span>Overtime hours</span><strong id="overtimeHours">0.00</strong></div>
+      <div class="row"><span>Gross pay</span><strong id="gross">$0.00</strong></div>
+      <div class="row"><span>Pre-tax deductions</span><strong id="preTax">−$0.00</strong></div>
+      <div class="row"><span>Employee taxes</span><strong id="taxes">−$0.00</strong></div>
+      <div class="row"><span>Post-tax deductions</span><strong id="postTax">−$0.00</strong></div>
+    </div>
+    <button id="saveWeek" class="secondary" disabled>Save this week</button>
+  </section>
 
-## Defaults used
+  <section class="card">
+    <div class="section-heading">
+      <h2>Weekly history</h2>
+      <button id="clearHistory" class="text-button">Clear</button>
+    </div>
+    <div id="history"><p class="empty">No saved weeks yet.</p></div>
+  </section>
 
-- Regular rate: $36.10/hour
-- Overtime: 1.5x after 40 hours
-- Fixed pre-tax deduction: $176.80
-- Variable pre-tax deduction: 4% of gross pay
-- Post-tax deduction: $1.13
-- Taxes estimated from the four supplied payroll examples
+  <details class="card">
+    <summary>Calculation settings</summary>
+    <p class="helper" style="margin-top:12px">Defaults are fitted to your supplied checks. Change these only when your pay or deductions change.</p>
+    <div class="settings-grid">
+      <label>Regular rate<input id="rate" type="number" min="0" step=".01"></label>
+      <label>Overtime begins<input id="otStart" type="number" min="0" step=".01"></label>
+      <label>OT multiplier<input id="otMultiplier" type="number" min="0" step=".01"></label>
+      <label>Fixed pre-tax<input id="fixedPreTax" type="number" min="0" step=".01"></label>
+      <label>Variable pre-tax %<input id="variablePreTax" type="number" min="0" step=".01"></label>
+      <label>Post-tax deduction<input id="postTaxSetting" type="number" min="0" step=".01"></label>
+    </div>
+    <div class="settings-buttons">
+      <button id="saveSettings" class="secondary">Save settings</button>
+      <button id="resetSettings" class="text-button">Restore defaults</button>
+    </div>
+  </details>
 
-## Recommended phone installation
+  <p class="legal">Estimate only. Actual payroll can change because of withholding elections, benefits, bonuses, tax limits, and employer payroll rules.</p>
+</main>
 
-The PWA must be served from HTTPS for full install/offline support.
+<script>
+"use strict";
 
-### GitHub Pages
+const DEFAULTS = Object.freeze({
+  rate: 36.10,
+  otStart: 40.00,
+  otMultiplier: 1.50,
+  fixedPreTax: 176.80,
+  variablePreTax: 4.00,
+  postTax: 1.13
+});
 
-1. Create a new GitHub repository, for example `weekly-paycheck-app`.
-2. Upload the **contents** of the `Paycheck_Phone_App` folder.
-3. In the repository, open **Settings > Pages**.
-4. Under **Build and deployment**, select:
-   - Source: `Deploy from a branch`
-   - Branch: `main`
-   - Folder: `/ (root)`
-5. Open the GitHub Pages address on the phone.
+const GROSS_POINTS = Object.freeze([
+  [0.00, 0.00],
+  [40.00, 1444.00],
+  [45.75, 1755.37],
+  [50.25, 1999.05],
+  [63.50, 2716.53]
+]);
 
-Android/Chrome:
-- Open the browser menu.
-- Select **Install app** or **Add to Home screen**.
+const TAX_POINTS = Object.freeze([
+  [1607.34, 307.87],
+  [1755.37, 357.48],
+  [1999.05, 439.18],
+  [2716.53, 681.48]
+]);
 
-iPhone/Safari:
-- Tap the Share button.
-- Select **Add to Home Screen**.
+const SETTINGS_KEY = "paycheck-settings-v2";
+const HISTORY_KEY = "paycheck-history-v2";
+const byId = id => document.getElementById(id);
+const money = value => new Intl.NumberFormat("en-US", {
+  style: "currency", currency: "USD"
+}).format(value);
+const round = value => Math.round((value + Number.EPSILON) * 100) / 100;
+const number = (value, fallback = 0) => {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+};
 
-## Local computer test
+let latest = null;
+let installPrompt = null;
 
-From the app folder run:
+function interpolate(x, points) {
+  let left, right;
+  if (x <= points[0][0]) {
+    [left, right] = [points[0], points[1]];
+  } else if (x >= points[points.length - 1][0]) {
+    [left, right] = [points[points.length - 2], points[points.length - 1]];
+  } else {
+    for (let i = 0; i < points.length - 1; i += 1) {
+      if (points[i][0] <= x && x <= points[i + 1][0]) {
+        [left, right] = [points[i], points[i + 1]];
+        break;
+      }
+    }
+  }
+  return left[1] + (x - left[0]) * (right[1] - left[1]) / (right[0] - left[0]);
+}
 
-```powershell
-py -m http.server 8000
-```
+function loadSettings() {
+  try {
+    return {...DEFAULTS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}")};
+  } catch {
+    return {...DEFAULTS};
+  }
+}
 
-Then open:
+function settingsAreDefaults(s) {
+  return Object.keys(DEFAULTS).every(key => Number(s[key]) === DEFAULTS[key]);
+}
 
-```text
-http://localhost:8000
-```
+function calculatePay(hours, extra, settings) {
+  const regularHours = Math.min(hours, settings.otStart);
+  const overtimeHours = Math.max(0, hours - settings.otStart);
+  const calculatedBase = regularHours * settings.rate +
+    overtimeHours * settings.rate * settings.otMultiplier;
 
-Do not double-click `index.html` when testing the service worker. Service
-workers require HTTP/HTTPS.
+  // Use supplied payroll checkpoints only while the original settings remain.
+  const baseGross = settingsAreDefaults(settings)
+    ? interpolate(hours, GROSS_POINTS)
+    : calculatedBase;
+
+  const gross = round(baseGross + extra);
+
+  if (gross === 0) {
+    return {hours, extra, regularHours, overtimeHours, gross:0, preTax:0, taxes:0, postTax:0, net:0};
+  }
+
+  const preTax = round(settings.fixedPreTax + gross * settings.variablePreTax / 100);
+  const interpolatedTax = interpolate(gross, TAX_POINTS);
+  const taxFloor = gross * .0765 + Math.max(0, gross - preTax) * .0495;
+  const taxes = round(Math.max(0, interpolatedTax, taxFloor));
+  const postTax = round(settings.postTax);
+  const net = round(gross - preTax - taxes - postTax);
+
+  return {hours, extra, regularHours, overtimeHours, gross, preTax, taxes, postTax, net};
+}
+
+function render(result) {
+  byId("net").textContent = money(result.net);
+  byId("regularHours").textContent = result.regularHours.toFixed(2);
+  byId("overtimeHours").textContent = result.overtimeHours.toFixed(2);
+  byId("gross").textContent = money(result.gross);
+  byId("preTax").textContent = "−" + money(result.preTax);
+  byId("taxes").textContent = "−" + money(result.taxes);
+  byId("postTax").textContent = "−" + money(result.postTax);
+  byId("saveWeek").disabled = result.hours <= 0;
+
+  byId("confidence").textContent =
+    result.gross >= 1607.34 && result.gross <= 2716.53
+      ? "Higher-confidence estimate: inside your supplied payroll range."
+      : "Outside your supplied payroll range; use this as an estimate.";
+}
+
+function calculateFromInputs() {
+  const hours = number(byId("hours").value, -1);
+  const extra = number(byId("extra").value, -1);
+  if (hours < 0 || extra < 0) {
+    byId("confidence").textContent = "Enter valid non-negative numbers.";
+    return;
+  }
+  latest = calculatePay(hours, extra, loadSettings());
+  render(latest);
+}
+
+function historyItems() {
+  try {
+    const items = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    return Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderHistory() {
+  const container = byId("history");
+  const items = historyItems();
+  container.replaceChildren();
+
+  if (!items.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "No saved weeks yet.";
+    container.append(empty);
+    return;
+  }
+
+  for (const item of items) {
+    const article = document.createElement("article");
+    article.className = "history-item";
+
+    const info = document.createElement("div");
+    info.className = "history-info";
+
+    const net = document.createElement("strong");
+    net.textContent = money(item.net);
+
+    const meta = document.createElement("span");
+    const saved = new Date(item.savedAt).toLocaleDateString("en-US", {
+      month:"short", day:"numeric", year:"numeric"
+    });
+    meta.textContent = `${saved} • ${item.hours.toFixed(2)} hrs • Gross ${money(item.gross)}`;
+
+    const del = document.createElement("button");
+    del.className = "text-button";
+    del.textContent = "Delete";
+    del.addEventListener("click", () => {
+      const remaining = historyItems().filter(entry => entry.id !== item.id);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(remaining));
+      renderHistory();
+    });
+
+    info.append(net, meta);
+    article.append(info, del);
+    container.append(article);
+  }
+}
+
+function populateSettings(settings) {
+  byId("rate").value = settings.rate.toFixed(2);
+  byId("otStart").value = settings.otStart.toFixed(2);
+  byId("otMultiplier").value = settings.otMultiplier.toFixed(2);
+  byId("fixedPreTax").value = settings.fixedPreTax.toFixed(2);
+  byId("variablePreTax").value = settings.variablePreTax.toFixed(2);
+  byId("postTaxSetting").value = settings.postTax.toFixed(2);
+}
+
+function readSettings() {
+  return {
+    rate: number(byId("rate").value, DEFAULTS.rate),
+    otStart: number(byId("otStart").value, DEFAULTS.otStart),
+    otMultiplier: number(byId("otMultiplier").value, DEFAULTS.otMultiplier),
+    fixedPreTax: number(byId("fixedPreTax").value, DEFAULTS.fixedPreTax),
+    variablePreTax: number(byId("variablePreTax").value, DEFAULTS.variablePreTax),
+    postTax: number(byId("postTaxSetting").value, DEFAULTS.postTax)
+  };
+}
+
+document.querySelectorAll(".preset").forEach(button => {
+  button.addEventListener("click", () => {
+    byId("hours").value = button.dataset.hours;
+    calculateFromInputs();
+  });
+});
+
+byId("calculate").addEventListener("click", calculateFromInputs);
+byId("hours").addEventListener("keydown", event => {
+  if (event.key === "Enter") calculateFromInputs();
+});
+byId("extra").addEventListener("keydown", event => {
+  if (event.key === "Enter") calculateFromInputs();
+});
+
+byId("saveWeek").addEventListener("click", () => {
+  if (!latest || latest.hours <= 0) return;
+  const items = historyItems();
+  items.unshift({
+    ...latest,
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    savedAt: new Date().toISOString()
+  });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 52)));
+  renderHistory();
+  byId("saveWeek").textContent = "Saved";
+  setTimeout(() => byId("saveWeek").textContent = "Save this week", 900);
+});
+
+byId("clearHistory").addEventListener("click", () => {
+  if (historyItems().length && confirm("Delete all saved weekly checks?")) {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  }
+});
+
+byId("saveSettings").addEventListener("click", () => {
+  const settings = readSettings();
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  populateSettings(settings);
+  calculateFromInputs();
+  byId("saveSettings").textContent = "Saved";
+  setTimeout(() => byId("saveSettings").textContent = "Save settings", 900);
+});
+
+byId("resetSettings").addEventListener("click", () => {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULTS));
+  populateSettings(DEFAULTS);
+  calculateFromInputs();
+});
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  installPrompt = event;
+  byId("installButton").hidden = false;
+});
+
+byId("installButton").addEventListener("click", async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  byId("installButton").hidden = true;
+});
+
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  byId("installButton").hidden = true;
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js");
+  });
+}
+
+// Confirm all supplied checks still match.
+const checks = [
+  [45.75, 0, 1149.75],
+  [50.25, 0, 1301.98],
+  [27, 632.64, 1057.25],
+  [63.50, 0, 1748.46]
+];
+const selfTest = checks.every(([hours, extra, expected]) =>
+  calculatePay(hours, extra, DEFAULTS).net === expected
+);
+
+populateSettings(loadSettings());
+renderHistory();
+if (!selfTest) byId("confidence").textContent = "Calculation self-test failed.";
+</script>
+</body>
+</html>
