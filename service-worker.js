@@ -37,8 +37,8 @@ self.addEventListener("fetch", event => {
       const response = await fetch(event.request);
       // Do not cache a GitHub Pages 404 as if it were a healthy app.
       if (response.ok) {
-        const cache = await caches.open(CACHE);
-        await cache.put(event.request, response.clone());
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {});
       }
       return response;
     } catch (_) {
