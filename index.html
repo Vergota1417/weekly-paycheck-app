@@ -198,6 +198,38 @@
     }
     .settings-buttons { display: grid; gap: 7px; }
     .legal { padding: 0 8px; text-align: center; }
+
+    /* Overtime decision support: keep the calculator itself unchanged. */
+    .ot-eyebrow { font-size: .75rem; font-weight: 800; color: var(--muted); }
+    .ot-intro { color: var(--muted); font-size: .88rem; line-height: 1.5; margin: 8px 0 14px; }
+    .ot-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 13px; }
+    .ot-stat { padding: 12px; border-radius: 14px; background: #f1f6fa; }
+    .ot-stat span { display: block; color: var(--muted); font-size: .75rem; margin-bottom: 7px; }
+    .ot-stat strong { display: block; color: var(--navy); font-size: 1.18rem; line-height: 1.2; }
+    .ot-stat small { color: var(--muted); font-size: .73rem; }
+    .ot-message { padding: 13px; border-radius: 13px; background: #eef5f7; color: var(--navy); font-size: .84rem; line-height: 1.5; margin: 4px 0 13px; }
+    .ot-message-notice { background: #fff4e5; color: #724515; }
+    .ot-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 13px; }
+    .ot-table { width: 100%; min-width: 425px; border-collapse: collapse; font-size: .81rem; font-variant-numeric: tabular-nums; }
+    .ot-table th, .ot-table td { padding: 11px 9px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+    .ot-table th:first-child, .ot-table td:first-child { text-align: left; }
+    .ot-table thead th { font-size: .72rem; font-weight: 850; background: #f4f7f9; color: var(--muted); }
+    .ot-table tbody tr:last-child th, .ot-table tbody tr:last-child td { border-bottom: 0; }
+    .ot-table .ot-selected { background: #e7f5ed; }
+    .ot-controls { margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .ot-controls summary { font-size: .89rem; }
+    .ot-controls .settings-grid { margin-top: 12px; }
+    .ot-controls .settings-grid input, .ot-controls .settings-grid select {
+      display: block; width: 100%; margin-top: 6px; padding: 11px 8px;
+      border: 1px solid var(--line); border-radius: 10px; background: #fff;
+      color: #17212b; font: inherit; font-size: .95rem;
+    }
+    .ot-check { display: flex; gap: 10px; align-items: flex-start; font-size: .87rem; font-weight: 650; margin-top: 12px; }
+    .ot-check input { width: 20px; min-width: 20px; height: 20px; margin: 0; accent-color: var(--navy); }
+    .ot-note { margin: 10px 0 0; color: var(--muted); font-size: .76rem; line-height: 1.55; }
+    .ot-links { font-size: .75rem; line-height: 1.6; margin-top: 11px; }
+    .ot-links a { color: var(--navy2); }
+
     [hidden] { display: none !important; }
     @media(max-width:390px) {
       .settings-grid { grid-template-columns: 1fr; }
@@ -259,6 +291,89 @@
       <div class="row"><span>Post-tax deductions</span><strong id="postTax">−$0.00</strong></div>
     </div>
     <button id="saveWeek" class="secondary" disabled>Save this week</button>
+  </section>
+
+
+  <section class="card" id="otAnalyzer" aria-labelledby="otTitle">
+    <div class="section-heading">
+      <h2 id="otTitle">Best hours for my money</h2>
+      <span class="ot-eyebrow">2026 estimate</span>
+    </div>
+    <p class="ot-intro">Working more usually means keeping more money. See when each extra five hours leaves you with less take-home per hour, after estimated annual taxes.</p>
+    <div class="ot-stats" aria-live="polite">
+      <div class="ot-stat">
+        <span>Highest-value extra 5 hours</span>
+        <strong id="otBest">—</strong>
+        <small id="otBestRate">—</small>
+      </div>
+      <div class="ot-stat">
+        <span>Gross overtime pay</span>
+        <strong id="otGrossRate">—</strong>
+        <small>Before taxes and benefits</small>
+      </div>
+    </div>
+    <p id="otMessage" class="ot-message" aria-live="polite">Calculating overtime value…</p>
+    <div class="ot-table-wrap" role="region" tabindex="0" aria-label="Estimated net pay and marginal return by hours worked">
+      <table class="ot-table">
+        <thead><tr>
+          <th scope="col">Hours</th>
+          <th scope="col">Net / week</th>
+          <th scope="col">Extra net</th>
+          <th scope="col">Per extra hr</th>
+          <th scope="col">Keep %</th>
+        </tr></thead>
+        <tbody id="otRows"></tbody>
+      </table>
+    </div>
+    <details class="ot-controls">
+      <summary>Personalize overtime estimate</summary>
+      <p class="ot-note">These settings are saved only on this device. Use 52 weeks to compare a full year. For the rest of 2026, enter weeks remaining and your year-to-date earnings.</p>
+      <div class="settings-grid">
+        <label>2026 filing status
+          <select id="otFiling">
+            <option value="single">Single</option>
+            <option value="joint">Married filing jointly</option>
+            <option value="head">Head of household</option>
+            <option value="separate">Married filing separately</option>
+          </select>
+        </label>
+        <label>Weeks at these hours
+          <input id="otWeeks" type="number" min="1" max="52" step="1" value="52">
+        </label>
+        <label>Gross wages already earned this year ($)
+          <input id="otEarnedYTD" type="number" min="0" step="1" value="0">
+        </label>
+        <label>Pre-tax deductions already taken ($)
+          <input id="otPretaxYTD" type="number" min="0" step="1" value="0">
+        </label>
+        <label>Other taxable income / year ($)
+          <input id="otOtherIncome" type="number" min="0" step="1" value="0">
+        </label>
+        <label>Illinois exemption allowances
+          <input id="otExemptions" type="number" min="0" max="20" step="1" value="1">
+        </label>
+        <label>2026 qualified OT premium already earned ($)
+          <input id="otPremiumYTD" type="number" min="0" step="1" value="0">
+        </label>
+        <label>Noticeable reduction vs first OT block (%)
+          <input id="otDropPercent" type="number" min="1" max="90" step="1" value="10">
+        </label>
+        <label>My minimum worth-it net / extra hour ($)
+          <input id="otMinHourly" type="number" min="0" step="1" value="30">
+        </label>
+      </div>
+      <label class="ot-check"><input id="otEligible" type="checkbox">
+        <span>Apply the federal qualified overtime deduction <strong>only if I qualify</strong></span>
+      </label>
+      <p id="otEligibilityNote" class="ot-note">Federal qualified overtime deduction is off by default.</p>
+      <p class="ot-note">Additional income is treated as taxable for federal and Illinois income tax; it does not count toward your employee FICA in this estimate. Update your regular rate and payroll deductions under <strong>Calculation settings</strong> below.</p>
+    </details>
+    <p id="otModelNote" class="ot-note"></p>
+    <p class="ot-links">
+      Rules: <a href="https://www.irs.gov/irb/2025-45_IRB" target="_blank" rel="noopener noreferrer">IRS 2026 tax brackets</a> ·
+      <a href="https://www.irs.gov/newsroom/one-big-beautiful-bill-how-to-take-advantage-of-no-tax-on-tips-and-overtime" target="_blank" rel="noopener noreferrer">IRS overtime deduction</a> ·
+      <a href="https://tax.illinois.gov/forms/withholding/currentyear/il-700-t-withholding-guide-tables.html" target="_blank" rel="noopener noreferrer">Illinois tax rate</a>
+    </p>
   </section>
 
   <section class="card">
@@ -578,5 +693,6 @@ populateSettings(loadSettings());
 renderHistory();
 if (!selfTest) byId("confidence").textContent = "Calculation self-test failed.";
 </script>
+<script src="./overtime.js" defer></script>
 </body>
 </html>
