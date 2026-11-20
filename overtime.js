@@ -244,6 +244,8 @@
   }
   const reload=()=>renderAnalyzer();
   id("hours").addEventListener("input",reload);
+  document.querySelectorAll(".preset").forEach(button => button.addEventListener("click",reload));
+  id("calculate").addEventListener("click",reload);
   id("saveSettings").addEventListener("click",reload);
   id("resetSettings").addEventListener("click",reload);
   renderAnalyzer();
